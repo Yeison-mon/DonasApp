@@ -1,0 +1,60 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/pos"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Dashboard de Cartera</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding dashboard">
+  <!-- Tarjeta de Ingresos Totales -->
+  <ion-card class="income-card">
+    <ion-card-content>
+      <div class="stat-label">Ingresos Totales</div>
+      <div class="stat-value">{{totalIncome | currency}}</div>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-row>
+    <!-- Ingresos por Efectivo -->
+    <ion-col size="6">
+      <ion-card color="success">
+        <ion-card-header>
+          <ion-card-subtitle>Efectivo</ion-card-subtitle>
+          <ion-card-title>{{incomeByMethod['Efectivo'] | currency}}</ion-card-title>
+        </ion-card-header>
+      </ion-card>
+    </ion-col>
+    <!-- Ingresos por Transferencia -->
+    <ion-col size="6">
+      <ion-card color="secondary">
+        <ion-card-header>
+          <ion-card-subtitle>Transferencia</ion-card-subtitle>
+          <ion-card-title>{{incomeByMethod['Transferencia'] | currency}}</ion-card-title>
+        </ion-card-header>
+      </ion-card>
+    </ion-col>
+  </ion-row>
+
+  <!-- Reporte de más vendidos -->
+  <ion-card class="best-sellers-card">
+    <ion-card-header>
+      <ion-card-title>Top 5 Productos Más Vendidos</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list>
+        <ion-item *ngFor="let prod of bestSellers; let i = index">
+          <ion-badge slot="start" color="tertiary">{{i + 1}}</ion-badge>
+          <ion-label>
+            <h2>{{prod.name}}</h2>
+            <p>{{prod.total_qty}} unidades vendidas</p>
+          </ion-label>
+        </ion-item>
+        <ion-item *ngIf="bestSellers.length === 0">
+          <ion-label>Sin ventas registradas</ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

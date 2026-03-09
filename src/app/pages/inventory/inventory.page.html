@@ -1,0 +1,160 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/pos" text="Atrás"></ion-back-button>
+    </ion-buttons>
+    <ion-title>✨ Almacén Mágico ✨</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="kawaii-header">📦 Gestión de Inventario</div>
+
+  <ion-segment [value]="activeSegment" (ionChange)="segmentChanged($event)" mode="ios">
+    <ion-segment-button value="products">
+      <ion-label>🍩 Donas</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="config">
+      <ion-label>💖 Config</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+
+  <div [ngSwitch]="activeSegment">
+    <!-- SECCIÓN DE PRODUCTOS -->
+    <div *ngSwitchCase="'products'">
+      <ion-card class="add-card">
+        <ion-card-header>
+          <ion-card-title>✨ Nueva Dona</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <!-- Vista previa de foto -->
+          <div class="photo-preview" *ngIf="newProduct.image_url">
+            <img [src]="newProduct.image_url" />
+            <ion-button (click)="newProduct.image_url = ''" color="danger" size="small">Quitar</ion-button>
+          </div>
+
+          <ion-grid>
+            <ion-row>
+              <ion-col size="12" size-md="6">
+                <ion-item fill="outline" mode="md" class="kawaii-input">
+                  <ion-label position="floating">Nombre</ion-label>
+                  <ion-input [(ngModel)]="newProduct.name" placeholder="Ej: Glaseada Fresa"></ion-input>
+                </ion-item>
+              </ion-col>
+              <ion-col size="6" size-md="3">
+                <ion-item fill="outline" mode="md" class="kawaii-input">
+                  <ion-label position="floating">Precio</ion-label>
+                  <ion-input type="number" [(ngModel)]="newProduct.price"></ion-input>
+                </ion-item>
+              </ion-col>
+              <ion-col size="6" size-md="3">
+                <ion-item fill="outline" mode="md" class="kawaii-input">
+                  <ion-label position="floating">Stock</ion-label>
+                  <ion-input type="number" [(ngModel)]="newProduct.stock"></ion-input>
+                </ion-item>
+              </ion-col>
+              <ion-col size="12">
+                <ion-item fill="outline" mode="md" class="kawaii-input">
+                  <ion-label>Categoría 🌈</ion-label>
+                  <ion-select [(ngModel)]="newProduct.cat_id">
+                    <ion-select-option *ngFor="let cat of categories" [value]="cat.id">{{cat.name}}</ion-select-option>
+                  </ion-select>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+          <div class="form-buttons">
+            <ion-button (click)="takeProductPhoto()" color="tertiary" fill="outline">
+              <ion-icon name="camera" slot="start"></ion-icon> Foto
+            </ion-button>
+            <ion-button (click)="addProduct()" color="primary" expand="block">
+              ¡GUARDAR DONA! 🍩
+            </ion-button>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <div class="product-grid">
+        <ion-card *ngFor="let prod of products" [class.inactive]="prod.is_active === 0" class="item-card">
+          <div class="delete-btn-container">
+            <ion-button (click)="deleteProduct(prod.id)" color="danger" size="small" fill="clear">
+              <ion-icon name="trash"></ion-icon>
+            </ion-button>
+          </div>
+          <img [src]="prod.image_url || 'https://placehold.co/300x200?text=🍩'" class="prod-img" />
+          <ion-card-header>
+            <ion-badge color="secondary">{{prod.cat_name}}</ion-badge>
+            <ion-card-title>{{prod.name}}</ion-card-title>
+            <ion-card-subtitle>{{prod.price | currency}}</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="stock-badge" [class.low]="prod.stock < 5">
+              📦 Stock: {{prod.stock}}
+            </div>
+            <div class="action-buttons">
+              <ion-button size="small" (click)="updateStock(prod.id, prod.stock, -1)" color="tertiary">-</ion-button>
+              <ion-button size="small" (click)="updateStock(prod.id, prod.stock, 1)" color="tertiary">+</ion-button>
+              <ion-button size="small" [color]="prod.is_active === 1 ? 'success' : 'medium'" (click)="toggleProductStatus(prod.id, prod.is_active)">
+                {{prod.is_active === 1 ? 'Activa' : 'Pausada'}}
+              </ion-button>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </div>
+    </div>
+
+    <!-- SECCIÓN DE CONFIGURACIÓN -->
+    <div *ngSwitchCase="'config'">
+      <ion-row>
+        <ion-col size="12" size-md="6">
+          <ion-card class="config-card">
+            <ion-card-header>
+              <ion-card-title>💖 Categorías</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-item fill="outline">
+                <ion-label position="floating">Nombre</ion-label>
+                <ion-input [(ngModel)]="newCategory.name"></ion-input>
+              </ion-item>
+              <ion-button expand="block" (click)="addCategory()" class="ion-margin-top">Añadir ✨</ion-button>
+              <ion-list lines="none">
+                <ion-item *ngFor="let cat of categories">
+                  <div slot="start" class="color-dot" [style.background]="cat.color_code"></div>
+                  <ion-label>{{cat.name}}</ion-label>
+                </ion-item>
+              </ion-list>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <ion-col size="12" size-md="6">
+          <ion-card class="config-card">
+            <ion-card-header>
+              <ion-card-title>🍬 Extras / Toppings</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-item fill="outline">
+                <ion-label position="floating">Extra</ion-label>
+                <ion-input [(ngModel)]="newTopping.name"></ion-input>
+              </ion-item>
+              <ion-item fill="outline" class="ion-margin-top">
+                <ion-label position="floating">Precio</ion-label>
+                <ion-input type="number" [(ngModel)]="newTopping.price"></ion-input>
+              </ion-item>
+              <ion-button expand="block" (click)="addTopping()" color="tertiary" class="ion-margin-top">Añadir Topping 🍭</ion-button>
+              <ion-list lines="none">
+                <ion-item *ngFor="let t of toppings">
+                  <ion-label>{{t.name}}</ion-label>
+                  <ion-note slot="end">{{t.price | currency}}</ion-note>
+                  <ion-button slot="end" fill="clear" color="danger" (click)="deleteTopping(t.id)">
+                    <ion-icon name="trash"></ion-icon>
+                  </ion-button>
+                </ion-item>
+              </ion-list>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </div>
+  </div>
+</ion-content>

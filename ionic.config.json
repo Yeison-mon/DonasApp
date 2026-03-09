@@ -1,0 +1,7 @@
+{
+  "name": "DonasApp",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

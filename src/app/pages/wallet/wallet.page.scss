@@ -1,0 +1,28 @@
+.dashboard {
+  --background: var(--ion-background-color);
+}
+
+.income-card {
+  text-align: center;
+  padding: 20px 0;
+  background: var(--ion-color-primary);
+  color: white;
+
+  .stat-label {
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.9;
+  }
+
+  .stat-value {
+    font-size: 3rem;
+    font-weight: bold;
+    margin-top: 10px;
+  }
+}
+
+.best-sellers-card {
+  margin-top: 20px;
+  border-radius: 12px;
+}

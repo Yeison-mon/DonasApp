@@ -1,0 +1,78 @@
+/* Kawaii 'Donut Delight' - Theme System */
+:root {
+  --ion-color-primary: #ffb7c5; /* Pink */
+  --ion-color-primary-contrast: #6a4b3f;
+  --ion-color-secondary: #fff5e1; /* Cream */
+  --ion-color-secondary-contrast: #6a4b3f;
+  --ion-color-tertiary: #a0785a; /* Brown */
+  --ion-color-tertiary-contrast: #ffffff;
+  --ion-color-success: #c5b3e1; /* Lavender */
+
+  --ion-background-color: #fff9fc;
+  --ion-item-background: #ffffff;
+  --ion-text-color: #6a4b3f;
+
+  --kawaii-card-bg: #ffffff;
+  --kawaii-border: 2px solid #ffdeeb;
+  --kawaii-shadow: 0 8px 25px rgba(255, 183, 197, 0.2);
+  --header-gradient: linear-gradient(135deg, #ffb7c5 0%, #ffdeeb 100%);
+}
+
+/* Rediseño Modo Oscuro - Colores más suaves y legibles */
+body.dark {
+  --ion-background-color: #2d1a12; /* Café muy oscuro */
+  --ion-item-background: #3d2b1f;
+  --ion-text-color: #ffeef4;
+
+  --ion-color-primary: #ff8fa3;
+  --ion-color-primary-contrast: #2d1a12;
+  --ion-color-secondary: #4d362a;
+  --ion-color-secondary-contrast: #ffb7c5;
+  --ion-color-tertiary: #d2a679;
+  
+  --kawaii-card-bg: #3d2b1f;
+  --kawaii-border: 2px solid #ff8fa3;
+  --kawaii-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  --header-gradient: linear-gradient(135deg, #3d2b1f 0%, #2d1a12 100%);
+
+  /* Fix para inputs y selects en modo oscuro */
+  --ion-color-step-100: #4d362a;
+  --ion-color-step-150: #5d463a;
+}
+
+/* Estilos Globales de UI */
+ion-card {
+  --background: var(--kawaii-card-bg);
+  border-radius: 25px !important;
+  border: var(--kawaii-border) !important;
+  box-shadow: var(--kawaii-shadow) !important;
+  margin: 15px;
+  transition: transform 0.3s ease;
+}
+
+.kawaii-header {
+  background: var(--header-gradient);
+  padding: 20px;
+  border-radius: 0 0 30px 30px;
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: var(--ion-color-primary-contrast);
+  margin-bottom: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* Botones redondeados tipo "Pill" */
+ion-button {
+  --border-radius: 50px !important;
+  font-weight: bold !important;
+  text-transform: none !important;
+  height: 45px;
+}
+
+/* Fix para tablas y listas */
+ion-item {
+  --border-radius: 15px;
+  margin: 5px 0;
+  --background: transparent;
+}

@@ -1,0 +1,44 @@
+.pos-container {
+  display: flex;
+  height: 100%;
+}
+
+.products-section {
+  flex: 7;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+.ticket-panel {
+  flex: 3;
+  background: var(--ion-color-secondary);
+  border-left: 1px solid var(--ion-color-tertiary-shade);
+  padding: 10px;
+  overflow-y: auto;
+}
+
+.category-filters {
+  display: flex;
+  overflow-x: auto;
+  padding: 10px 0;
+  white-space: nowrap;
+}
+
+.product-card {
+  cursor: pointer;
+  transition: transform 0.2s;
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.ticket-totals {
+  margin: 20px 0;
+  border-top: 2px dashed var(--ion-color-tertiary);
+  padding-top: 10px;
+}
+
+.grand-total {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
