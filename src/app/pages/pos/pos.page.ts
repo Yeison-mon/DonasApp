@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { DatabaseService } from '../../services/database';
 import { CartService, CartItem, ExtraItem } from '../../services/cart';
 import { ThemeService } from '../../services/theme';
-import { AlertController } from '@ionic/angular';
+import { AlertController, ModalController } from '@ionic/angular';
+import { ModalConfigComponent } from './modal-config.component';
 
 @Component({
   selector: 'app-pos',
@@ -22,18 +23,25 @@ export class PosPage implements OnInit {
   tax: number = 0;
   grandTotal: number = 0;
 
+  // Nuevos estados para toppings y cantidad
+  selectedProduct: any = null;
+  selectedQty: number = 1;
+  selectedToppings: ExtraItem[] = [];
+
   constructor(
     private dbService: DatabaseService,
     public cartService: CartService,
     public themeService: ThemeService,
-    private alertCtrl: AlertController
+    private alertCtrl: AlertController,
+    private modalCtrl: ModalController
   ) { }
 
   async ngOnInit() {
     await this.loadData();
     
     // Escuchar cambios en el carrito
-    this.cartService.cartItems$.subscribe(() => {
+    this.cartService.cartItems$.subscribe(items => {
+      this.cartItems = items;
       this.refreshTotals();
     });
 
@@ -83,27 +91,67 @@ export class PosPage implements OnInit {
     });
   }
 
-  async addToCartWithExtras(product: any) {
-    if (this.toppings.length === 0) {
-      this.cartService.addToCart(product);
-      return;
+  selectProduct(product: any) {
+    this.selectedProduct = product;
+    this.selectedQty = 1;
+    this.selectedToppings = [];
+  }
+
+  cancelSelection() {
+    this.selectedProduct = null;
+  }
+
+  confirmAddToCart() {
+    if (!this.selectedProduct) return;
+    this.cartService.addToCart(this.selectedProduct, this.selectedToppings, this.selectedQty);
+    this.selectedProduct = null;
+  }
+
+  toggleTopping(topping: ExtraItem) {
+    const index = this.selectedToppings.findIndex(t => t.name === topping.name);
+    if (index > -1) {
+      this.selectedToppings.splice(index, 1);
+    } else {
+      this.selectedToppings.push(topping);
     }
+  }
+
+  isToppingSelected(topping: ExtraItem): boolean {
+    return this.selectedToppings.some(t => t.name === topping.name);
+  }
+
+  incrementQty() {
+    this.selectedQty++;
+  }
+
+  decrementQty() {
+    if (this.selectedQty > 1) {
+      this.selectedQty--;
+    }
+  }
+
+  getSelectedSubtotal(): number {
+    if (!this.selectedProduct) return 0;
+    const extrasPrice = this.selectedToppings.reduce((acc, t) => acc + t.price, 0);
+    return (this.selectedProduct.price + extrasPrice) * this.selectedQty;
+  }
+
+  async checkout() {
+    if (this.cartItems.length === 0) return;
 
     const alert = await this.alertCtrl.create({
-      header: 'Añadir Extras ✨',
-      message: `Elige toppings para: ${product.name}`,
-      inputs: this.toppings.map(e => ({
-        type: 'checkbox',
-        label: `${e.name} (+${e.price})`,
-        value: e,
-        name: e.name
-      })),
+      header: 'Método de Pago 💳',
+      message: `Total a cobrar: ${this.grandTotal.toLocaleString('es-MX', {style: 'currency', currency: 'MXN'})}`,
+      inputs: [
+        { type: 'radio', label: 'Efectivo 💵', value: 'Efectivo', checked: true },
+        { type: 'radio', label: 'Transferencia 📱', value: 'Transferencia' }
+      ],
       buttons: [
-        { text: 'Sin extras', handler: () => this.cartService.addToCart(product) },
-        { 
-          text: 'Añadir', 
-          handler: (extras: ExtraItem[]) => {
-            this.cartService.addToCart(product, extras);
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Confirmar Venta ✨',
+          handler: async (method) => {
+            await this.processOrder(method);
           }
         }
       ]
@@ -111,13 +159,11 @@ export class PosPage implements OnInit {
     await alert.present();
   }
 
-  async checkout() {
-    if (this.cartItems.length === 0) return;
-    
+  async processOrder(method: string) {
     const date = new Date().toISOString();
     const result = await this.dbService.run(
       'INSERT INTO orders (date, total, tax, payment_method, status) VALUES (?, ?, ?, ?, ?)',
-      [date, this.grandTotal, this.tax, 'Efectivo', 'Completado']
+      [date, this.grandTotal, this.tax, method, 'Completado']
     );
 
     const orderId = result.changes?.lastId;
@@ -128,13 +174,21 @@ export class PosPage implements OnInit {
           'INSERT INTO order_items (order_id, product_id, qty, price, subtotal, extras_text) VALUES (?, ?, ?, ?, ?, ?)',
           [orderId, item.product_id, item.qty, item.price, item.subtotal, extrasText]
         );
+
+        // Actualizar Stock
+        const prod = this.products.find(p => p.id === item.product_id);
+        if (prod) {
+          const newStock = prod.stock - item.qty;
+          await this.dbService.run('UPDATE products SET stock = ? WHERE id = ?', [newStock, prod.id]);
+        }
       }
     }
 
     this.cartService.clearCart();
+    
     const successAlert = await this.alertCtrl.create({
       header: '¡Venta Exitosa! 🍩',
-      message: 'Gracias por tu compra.',
+      message: 'El registro se ha guardado en la cartera.',
       buttons: ['OK']
     });
     await successAlert.present();
@@ -142,29 +196,12 @@ export class PosPage implements OnInit {
   }
 
   async showConfig() {
-    const alert = await this.alertCtrl.create({
-      header: 'Configuración ⚙️',
-      inputs: [
-        {
-          name: 'iva',
-          type: 'number',
-          placeholder: 'IVA %',
-          value: this.cartService.getIvaRate()
-        }
-      ],
-      buttons: [
-        { text: 'Cancelar', role: 'cancel' },
-        {
-          text: 'Guardar',
-          handler: async (data) => {
-            const newIva = parseFloat(data.iva);
-            await this.dbService.run("UPDATE config SET value = ? WHERE key = 'iva'", [newIva]);
-            this.cartService.setIva(newIva);
-            this.refreshTotals();
-          }
-        }
-      ]
+    const modal = await this.modalCtrl.create({
+      component: ModalConfigComponent,
+      breakpoints: [0, 0.7, 1],
+      initialBreakpoint: 0.7,
+      handle: true
     });
-    await alert.present();
+    return await modal.present();
   }
 }

@@ -7,6 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { PosPageRoutingModule } from './pos-routing.module';
 
 import { PosPage } from './pos.page';
+import { ModalConfigComponent } from './modal-config.component';
 
 @NgModule({
   imports: [
@@ -15,6 +16,6 @@ import { PosPage } from './pos.page';
     IonicModule,
     PosPageRoutingModule
   ],
-  declarations: [PosPage]
+  declarations: [PosPage, ModalConfigComponent]
 })
 export class PosPageModule {}

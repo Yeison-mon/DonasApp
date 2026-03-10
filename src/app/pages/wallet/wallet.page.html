@@ -1,60 +1,123 @@
-<ion-header>
-  <ion-toolbar color="primary">
+<ion-header class="ion-no-border">
+  <ion-toolbar class="bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/pos"></ion-back-button>
+      <ion-back-button defaultHref="/pos" class="text-slate-600 dark:text-slate-300"></ion-back-button>
     </ion-buttons>
-    <ion-title>Dashboard de Cartera</ion-title>
+    <ion-title class="font-bold text-xl">Balance y Cartera 📊</ion-title>
+    <ion-buttons slot="end">
+      <button (click)="loadStats()" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mr-2 text-slate-600 dark:text-slate-300">
+        <ion-icon name="refresh-outline" class="text-xl"></ion-icon>
+      </button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding dashboard">
-  <!-- Tarjeta de Ingresos Totales -->
-  <ion-card class="income-card">
-    <ion-card-content>
-      <div class="stat-label">Ingresos Totales</div>
-      <div class="stat-value">{{totalIncome | currency}}</div>
-    </ion-card-content>
-  </ion-card>
+<ion-content class="bg-slate-50 dark:bg-slate-950">
+  <div class="max-w-5xl mx-auto p-6 space-y-8">
+    
+    <!-- Hero Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="md:col-span-2 bg-gradient-to-br from-pink-500 to-rose-600 rounded-[2.5rem] p-8 text-white shadow-2xl shadow-pink-200 dark:shadow-none relative overflow-hidden group">
+        <div class="relative z-10">
+          <p class="text-pink-100 font-bold uppercase tracking-[0.2em] text-xs mb-2">Ingresos Totales Acumulados</p>
+          <h1 class="text-6xl font-black tabular-nums">{{totalIncome | currency}}</h1>
+          <div class="mt-8 flex items-center space-x-4">
+            <div class="bg-white/20 backdrop-blur-md px-4 py-2 rounded-2xl flex items-center">
+              <ion-icon name="trending-up-outline" class="mr-2"></ion-icon>
+              <span class="font-bold">Ventas Activas</span>
+            </div>
+            <div class="text-pink-100 text-sm font-medium">
+              Actualizado hace un momento
+            </div>
+          </div>
+        </div>
+        <!-- Decoración -->
+        <ion-icon name="wallet" class="absolute -bottom-10 -right-10 text-[15rem] text-white/10 rotate-12 group-hover:rotate-0 transition-transform duration-700"></ion-icon>
+      </div>
 
-  <ion-row>
-    <!-- Ingresos por Efectivo -->
-    <ion-col size="6">
-      <ion-card color="success">
-        <ion-card-header>
-          <ion-card-subtitle>Efectivo</ion-card-subtitle>
-          <ion-card-title>{{incomeByMethod['Efectivo'] | currency}}</ion-card-title>
-        </ion-card-header>
-      </ion-card>
-    </ion-col>
-    <!-- Ingresos por Transferencia -->
-    <ion-col size="6">
-      <ion-card color="secondary">
-        <ion-card-header>
-          <ion-card-subtitle>Transferencia</ion-card-subtitle>
-          <ion-card-title>{{incomeByMethod['Transferencia'] | currency}}</ion-card-title>
-        </ion-card-header>
-      </ion-card>
-    </ion-col>
-  </ion-row>
+      <div class="space-y-4">
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-700 shadow-sm">
+          <p class="text-slate-400 dark:text-slate-500 font-bold text-[10px] uppercase tracking-widest mb-4">Por Efectivo 💵</p>
+          <h3 class="text-3xl font-black text-slate-800 dark:text-white tabular-nums">{{incomeByMethod['Efectivo'] | currency}}</h3>
+          <div class="w-full bg-slate-100 dark:bg-slate-700 h-2 rounded-full mt-4 overflow-hidden">
+            <div 
+              class="bg-green-500 h-full rounded-full transition-all duration-1000" 
+              [style.width]="(totalIncome > 0 ? (incomeByMethod['Efectivo'] / totalIncome * 100) : 0) + '%'"
+            ></div>
+          </div>
+        </div>
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-700 shadow-sm">
+          <p class="text-slate-400 dark:text-slate-500 font-bold text-[10px] uppercase tracking-widest mb-4">Por Transferencia 📱</p>
+          <h3 class="text-3xl font-black text-slate-800 dark:text-white tabular-nums">{{incomeByMethod['Transferencia'] | currency}}</h3>
+          <div class="w-full bg-slate-100 dark:bg-slate-700 h-2 rounded-full mt-4 overflow-hidden">
+            <div 
+              class="bg-blue-500 h-full rounded-full transition-all duration-1000" 
+              [style.width]="(totalIncome > 0 ? (incomeByMethod['Transferencia'] / totalIncome * 100) : 0) + '%'"
+            ></div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-  <!-- Reporte de más vendidos -->
-  <ion-card class="best-sellers-card">
-    <ion-card-header>
-      <ion-card-title>Top 5 Productos Más Vendidos</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <ion-list>
-        <ion-item *ngFor="let prod of bestSellers; let i = index">
-          <ion-badge slot="start" color="tertiary">{{i + 1}}</ion-badge>
-          <ion-label>
-            <h2>{{prod.name}}</h2>
-            <p>{{prod.total_qty}} unidades vendidas</p>
-          </ion-label>
-        </ion-item>
-        <ion-item *ngIf="bestSellers.length === 0">
-          <ion-label>Sin ventas registradas</ion-label>
-        </ion-item>
-      </ion-list>
-    </ion-card-content>
-  </ion-card>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- Top Productos -->
+      <div class="bg-white dark:bg-slate-800 rounded-[2.5rem] p-8 border border-slate-100 dark:border-slate-700 shadow-sm">
+        <div class="flex justify-between items-center mb-8">
+          <h2 class="text-2xl font-black text-slate-800 dark:text-white flex items-center">
+            <div class="w-10 h-10 bg-amber-100 dark:bg-amber-900/30 text-amber-600 rounded-xl flex items-center justify-center mr-3 text-xl">🏆</div>
+            Más Vendidos
+          </h2>
+        </div>
+
+        <div class="space-y-6">
+          <div *ngIf="bestSellers.length === 0" class="py-12 text-center text-slate-400 font-bold italic">
+            No hay datos de ventas aún... 🍩
+          </div>
+          
+          <div *ngFor="let prod of bestSellers; let i = index" class="flex items-center group">
+            <div class="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-slate-900 flex items-center justify-center font-black text-xl mr-4 group-hover:bg-pink-500 group-hover:text-white transition-all">
+              {{i + 1}}
+            </div>
+            <div class="flex-grow">
+              <h4 class="font-black text-slate-800 dark:text-white">{{prod.name}}</h4>
+              <div class="flex items-center mt-1">
+                <div class="flex-grow bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full mr-4 overflow-hidden">
+                  <div 
+                    class="bg-pink-400 h-full rounded-full" 
+                    [style.width]="(prod.total_qty / bestSellers[0].total_qty * 100) + '%'"
+                  ></div>
+                </div>
+                <span class="text-xs font-black text-slate-500 dark:text-slate-400 tabular-nums">{{prod.total_qty}} uds.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Últimas Órdenes (Visual simplificado) -->
+      <div class="bg-white dark:bg-slate-800 rounded-[2.5rem] p-8 border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col">
+        <h2 class="text-2xl font-black text-slate-800 dark:text-white mb-8 flex items-center">
+          <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 rounded-xl flex items-center justify-center mr-3 text-xl">📜</div>
+          Historial Reciente
+        </h2>
+        
+        <div class="flex-grow overflow-y-auto space-y-4 max-h-[400px] pr-2 custom-scrollbar">
+           <div *ngIf="recentOrders.length === 0" class="py-12 text-center text-slate-400 font-bold italic">
+            El historial está vacío
+           </div>
+
+           <div *ngFor="let order of recentOrders" class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 flex justify-between items-center">
+              <div>
+                <p class="font-black text-slate-800 dark:text-white text-sm">Pedido #{{order.id.toString().slice(-4)}}</p>
+                <p class="text-[10px] text-slate-400 font-bold uppercase">{{order.date | date:'shortTime'}} - {{order.payment_method}}</p>
+              </div>
+              <div class="text-right">
+                <p class="font-black text-pink-500">{{order.total | currency}}</p>
+                <span class="text-[8px] bg-green-100 dark:bg-green-900/30 text-green-600 px-2 py-0.5 rounded-full font-black uppercase">Éxito</span>
+              </div>
+           </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </ion-content>

@@ -11,6 +11,7 @@ export class WalletPage implements OnInit {
   totalIncome: number = 0;
   incomeByMethod: { [key: string]: number } = { 'Efectivo': 0, 'Transferencia': 0 };
   bestSellers: any[] = [];
+  recentOrders: any[] = [];
 
   constructor(private dbService: DatabaseService) { }
 
@@ -21,8 +22,11 @@ export class WalletPage implements OnInit {
   async loadStats() {
     // Ingresos totales
     const incomeResult = await this.dbService.query('SELECT SUM(total) as total FROM orders');
-    this.totalIncome = incomeResult.values?.[0].total || 0;
+    this.totalIncome = incomeResult.values?.[0]?.total || 0;
 
+    // Reiniciar métodos
+    this.incomeByMethod = { 'Efectivo': 0, 'Transferencia': 0 };
+    
     // Ingresos por método de pago
     const methodResult = await this.dbService.query('SELECT payment_method, SUM(total) as subtotal FROM orders GROUP BY payment_method');
     if (methodResult.values) {
@@ -41,5 +45,9 @@ export class WalletPage implements OnInit {
       LIMIT 5
     `);
     this.bestSellers = bestSellersResult.values || [];
+
+    // Órdenes recientes
+    const ordersResult = await this.dbService.query('SELECT * FROM orders ORDER BY id DESC');
+    this.recentOrders = (ordersResult.values || []).slice(0, 10);
   }
 }

@@ -33,7 +33,7 @@ export class CartService {
     return this.ivaRate * 100;
   }
 
-  addToCart(product: any, extras: ExtraItem[] = []) {
+  addToCart(product: any, extras: ExtraItem[] = [], qty: number = 1) {
     const currentItems = this.cartItems.getValue();
     
     // Calculamos el precio total del item incluyendo extras
@@ -48,15 +48,15 @@ export class CartService {
     );
 
     if (existingItemIndex > -1) {
-      currentItems[existingItemIndex].qty += 1;
+      currentItems[existingItemIndex].qty += qty;
       currentItems[existingItemIndex].subtotal = currentItems[existingItemIndex].qty * itemUnitPrice;
     } else {
       currentItems.push({
         product_id: product.id,
         name: product.name,
         price: itemUnitPrice,
-        qty: 1,
-        subtotal: itemUnitPrice,
+        qty: qty,
+        subtotal: itemUnitPrice * qty,
         extras: [...extras]
       });
     }

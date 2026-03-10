@@ -70,12 +70,46 @@ export class DatabaseService {
       const iva = await this.get('iva');
       return { values: [{ value: iva || '16' }] };
     }
+    
+    // Mejorar simulación para Wallet
     if (statement.includes('FROM orders')) {
-      return { values: await this.get('orders') };
+      const orders = await this.get('orders') || [];
+      
+      if (statement.includes('SUM(total)')) {
+        const total = orders.reduce((acc: number, o: any) => acc + (o.total || 0), 0);
+        return { values: [{ total }] };
+      }
+      
+      if (statement.includes('GROUP BY payment_method')) {
+        const groups: any = {};
+        orders.forEach((o: any) => {
+          groups[o.payment_method] = (groups[o.payment_method] || 0) + o.total;
+        });
+        return { values: Object.keys(groups).map(k => ({ payment_method: k, subtotal: groups[k] })) };
+      }
+      
+      return { values: orders };
     }
+    
     if (statement.includes('FROM order_items')) {
        const orders = await this.get('orders') || [];
        const allItems = orders.flatMap((o: any) => o.items || []);
+       
+       if (statement.includes('GROUP BY oi.product_id')) {
+         const prods = await this.get('products') || [];
+         const sales: any = {};
+         allItems.forEach((item: any) => {
+           sales[item.product_id] = (sales[item.product_id] || 0) + item.qty;
+         });
+         
+         const result = Object.keys(sales).map(pid => {
+           const p = prods.find((x: any) => x.id === parseInt(pid));
+           return { name: p?.name || 'Producto Desconocido', total_qty: sales[pid] };
+         }).sort((a, b) => b.total_qty - a.total_qty);
+         
+         return { values: result.slice(0, 5) };
+       }
+       
        return { values: allItems };
     }
     return { values: [] };
